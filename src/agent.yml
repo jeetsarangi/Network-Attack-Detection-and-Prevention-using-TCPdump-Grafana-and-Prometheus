@@ -1,0 +1,53 @@
+global:
+  config_version: 3
+input:
+  type: file
+  path: netlog.txt
+  readall: false # Read from the beginning of the file or not. False: read only new lines.
+imports:
+- type: grok_patterns
+  dir: /opt/grok-exporter/patterns
+grok_patterns:
+- 'HTTP_STATUS [A-Z]{3,4}'
+metrics:
+- type: counter
+  name: prot_tcp	
+  help: Destination IP Addresses
+  match: '%{INT:ts} IP %{IP:sip}\.%{INT:sp} > %{IP:dip}\.%{INT:dp}\: Flags.*'
+  labels:
+    ts: '{{.ts}}'
+    sip: '{{.sip}}'
+    sp: '{{.sp}}'
+    dip: '{{.dip}}'
+    dp: '{{.dp}}'
+
+- type: counter
+  name: prot_udp	
+  help: UDP packet count
+  match: '%{INT:ts} IP %{IP:sip}\.%{INT:sp} > %{IP:dip}\.%{INT:dp}\: UDP.*'
+  labels:
+    ts: '{{.ts}}'
+    sip: '{{.sip}}'
+    sp: '{{.sp}}'
+    dip: '{{.dip}}'
+    dp: '{{.dp}}'
+
+- type: counter
+  name: prot_icmp	
+  help: ICMP Count
+  match: '%{INT:ts} IP %{IP:sip}\. > %{IP:dip}\: ICMP.*'
+  labels:
+    ts: '{{.ts}}'
+    sip: '{{.sip}}'
+    dip: '{{.dip}}'
+
+- type: counter
+  name: prot_arp	
+  help: ARP Request and Response count
+  match: '%{INT:ts} ARP.*'
+  labels:
+    ts: '{{.ts}}'
+
+server:
+  protocol: http
+  port: 9144
